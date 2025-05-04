@@ -1,6 +1,7 @@
 # payment_gateway_sdk/gateways/ecpay/__init__.py
 from .adapter import EcpayAdapter
 from .dao import EcpayDAO
+
 from .dto import (
     # Base and specific payment inputs
     EcpayBasePaymentInput,
@@ -14,9 +15,16 @@ from .dto import (
     EcpayBnplPaymentInput,
     # Specific Output Info DTO
     EcpayBnplApplicationInfo,
-    # ECPay Specific Transaction DTOs (Moved here from Schema)
-    EcpayDoActionInput,
-    EcpayDoActionOutput,
+    # --- Specific Action Inputs/Outputs (Replaced DoAction) ---
+    EcpayCaptureInput,
+    EcpayCaptureOutput,
+    EcpayRefundInput,
+    EcpayRefundOutput,
+    EcpayCancelAuthInput,
+    EcpayCancelAuthOutput,
+    EcpayAbandonInput,
+    EcpayAbandonOutput,
+    # --- Specific Query Inputs/Outputs ---
     EcpayQueryCreditCardDetailsInput,
     EcpayQueryCreditCardDetailsOutput,
     EcpayQueryPeriodicDetailsOutput,
@@ -57,9 +65,15 @@ __all__ = [
     "EcpayBnplPaymentInput",
     # Specific Output Info DTO
     "EcpayBnplApplicationInfo",
-    # Transaction Operation DTOs (Defined locally)
-    "EcpayDoActionInput",
-    "EcpayDoActionOutput",
+    # Transaction Operation DTOs (Defined locally) - Use new names
+    "EcpayCaptureInput",
+    "EcpayCaptureOutput",
+    "EcpayRefundInput",
+    "EcpayRefundOutput",
+    "EcpayCancelAuthInput",
+    "EcpayCancelAuthOutput",
+    "EcpayAbandonInput",
+    "EcpayAbandonOutput",
     "EcpayQueryCreditCardDetailsInput",
     "EcpayQueryCreditCardDetailsOutput",
     "EcpayQueryPeriodicDetailsOutput",
