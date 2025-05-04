@@ -1,17 +1,15 @@
 # payment_gateway_sdk/__init__.py
 import logging
 
-# Configure basic logging for the SDK
-# Users can override this in their application
 logging.getLogger(__name__).addHandler(logging.NullHandler())
 
-# Expose key components for easier import by the user
 from .schema.gateway import GatewayFactory
+
+# Import from schema DTOs (Generic ones)
 from .schema.dto.payment import (
     BasePaymentInput,
     PaymentOutput,
     CardholderInfo,
-    PaymentMethod,
     PaymentStatus,
     RedirectMethod,
     BasePaymentInfo,
@@ -21,55 +19,122 @@ from .schema.dto.payment import (
     UrlPaymentInfo,
 )
 from .schema.dto.transaction import (
-    RefundInput,
-    RefundOutput,
     QueryInput,
     QueryOutput,
     TransactionRecord,
+    PaymentInfoQueryOutput,
+    ActionInput,
+    ActionOutput,  # Generic action DTOs from schema
 )
 from .core.exceptions import (
     ValidationError,
     GatewayError,
     AuthenticationError,
     PaymentGatewayBaseError,
-    NotImplementedError,  # Re-export if needed
+    NotImplementedError,
 )
 
-# Import specific adapters if users might need to type hint or check instance
+# Import specific adapters and their specific DTOs
 from .gateways.ecpay.adapter import EcpayAdapter
-from .gateways.tappay.adapter import TappayAdapter
+from .gateways.ecpay.dto import (  # ECPay specific INPUTS and transaction/info DTOs
+    # Payment Inputs
+    EcpayBasePaymentInput,
+    EcpayCreditPaymentInput,
+    EcpayAtmPaymentInput,
+    EcpayCvsPaymentInput,
+    EcpayBarcodePaymentInput,
+    EcpayWebAtmPaymentInput,
+    EcpayApplePayPaymentInput,
+    EcpayTwqrPaymentInput,
+    EcpayBnplPaymentInput,
+    # Output Info
+    EcpayBnplApplicationInfo,
+    # Action Inputs/Outputs
+    EcpayCaptureInput,
+    EcpayCaptureOutput,
+    EcpayRefundInput,
+    EcpayRefundOutput,
+    EcpayCancelAuthInput,
+    EcpayCancelAuthOutput,
+    EcpayAbandonInput,
+    EcpayAbandonOutput,
+    # Query Inputs/Outputs
+    EcpayQueryCreditCardDetailsInput,
+    EcpayQueryCreditCardDetailsOutput,
+    EcpayQueryPeriodicDetailsOutput,
+    # Nested Query/Action DTOs
+    EcpayCreditCloseDataRecord,
+    EcpayPeriodicExecLogRecord,
+)
+from .gateways.ecpay.constants import EcpayPaymentMethod, EcpayAction  # ECPay constants
 
-__version__ = "0.2.0"  # Updated version example
+from .gateways.tappay.adapter import TappayAdapter
+from .gateways.tappay.dto import TappayPrimePaymentInput, TappayTokenPaymentInput
+
+__version__ = "0.6.0"  # Updated version example
 
 __all__ = [
     # Factory
     "GatewayFactory",
-    # Base Input/Output DTOs
+    # Base/Generic Input/Output DTOs (from Schema)
     "BasePaymentInput",
     "PaymentOutput",
     "BasePaymentInfo",
-    "RefundInput",
-    "RefundOutput",
     "QueryInput",
     "QueryOutput",
     "TransactionRecord",
+    "PaymentInfoQueryOutput",
+    "ActionInput",
+    "ActionOutput",
     "CardholderInfo",
-    # Specific Payment Info DTOs (for interpreting PaymentOutput.payment_info)
+    # Generic Payment Info DTOs (from Schema)
     "AtmPaymentInfo",
     "CvsPaymentInfo",
     "BarcodePaymentInfo",
     "UrlPaymentInfo",
-    # Enums
-    "PaymentMethod",
+    # Enums (from Schema)
     "PaymentStatus",
     "RedirectMethod",
-    # Exceptions
+    # Exceptions (from Core)
     "ValidationError",
     "GatewayError",
     "AuthenticationError",
     "PaymentGatewayBaseError",
     "NotImplementedError",
-    # Specific Adapters (Optional - if needed for type checking)
+    # Specific Gateway Adapters
     "EcpayAdapter",
     "TappayAdapter",
+    # --- ECPay Exports ---
+    # Specific ECPay Input DTOs (from gateways.ecpay.dto)
+    "EcpayBasePaymentInput",
+    "EcpayCreditPaymentInput",
+    "EcpayAtmPaymentInput",
+    "EcpayCvsPaymentInput",
+    "EcpayBarcodePaymentInput",
+    "EcpayWebAtmPaymentInput",
+    "EcpayApplePayPaymentInput",
+    "EcpayTwqrPaymentInput",
+    "EcpayBnplPaymentInput",
+    # Specific ECPay Output Info DTO (from gateways.ecpay.dto)
+    "EcpayBnplApplicationInfo",
+    # ECPay Constants (from gateways.ecpay.constants)
+    "EcpayPaymentMethod",
+    "EcpayAction",
+    # Specific ECPay Action/Query DTOs (from gateways.ecpay.dto)
+    "EcpayCaptureInput",
+    "EcpayCaptureOutput",
+    "EcpayRefundInput",
+    "EcpayRefundOutput",
+    "EcpayCancelAuthInput",
+    "EcpayCancelAuthOutput",
+    "EcpayAbandonInput",
+    "EcpayAbandonOutput",
+    "EcpayQueryCreditCardDetailsInput",
+    "EcpayQueryCreditCardDetailsOutput",
+    "EcpayQueryPeriodicDetailsOutput",
+    "EcpayCreditCloseDataRecord",
+    "EcpayPeriodicExecLogRecord",
+    # --- TapPay Exports ---
+    "TappayPrimePaymentInput",
+    "TappayTokenPaymentInput",
 ]

@@ -1,33 +1,19 @@
 # payment_gateway_sdk/schema/dto/payment.py
 from dataclasses import dataclass, field
-from typing import Optional, Dict, Any, Union  # Ensure Union is imported
+from typing import Optional, Dict, Any, Union
 from enum import Enum
 
-
-# --- Enums (PaymentMethod, PaymentStatus, RedirectMethod) ---
-# ... (as before) ...
-class PaymentMethod(Enum):  # ...
-    CREDIT = "Credit"
-    ATM = "ATM"
-    CVS = "CVS"
-    BARCODE = "BARCODE"
-    WEBATM = "WebATM"
-    APPLEPAY = "ApplePay"
-    GOOGLEPAY = "GooglePay"
-    LINEPAY = "LinePay"
-    ALL = "ALL"
-    BNPL = "BNPL"
-    TWQR = "TWQR"
-    UNKNOWN = "Unknown"
+# Removed PaymentMethod Enum - Now handled via strings by adapters
 
 
-class PaymentStatus(Enum):  # ...
+class PaymentStatus(Enum):
     PENDING = "Pending"
     SUCCESS = "Success"
     FAILED = "Failed"
     CANCELED = "Canceled"
     REFUNDED = "Refunded"
     PARTIALLY_REFUNDED = "PartiallyRefunded"
+    APPLYING = "Applying"  # Specific state, e.g., for BNPL application
     ERROR = "Error"
     UNKNOWN = "Unknown"
 
@@ -37,9 +23,8 @@ class RedirectMethod(Enum):
     POST = "POST"
 
 
-# --- Input DTOs ---
 @dataclass
-class CardholderInfo:  # ... (as before) ...
+class CardholderInfo:
     name: Optional[str] = None
     phone_number: Optional[str] = None
     email: Optional[str] = None
@@ -47,47 +32,46 @@ class CardholderInfo:  # ... (as before) ...
 
 
 @dataclass
-class BasePaymentInput:  # ... (as before) ...
+class BasePaymentInput:
     amount: int
     currency: str
     order_id: str
     details: str
-    return_url: Optional[str] = None
+    return_url: Optional[str] = None  # Often mandatory depending on gateway/method
     client_redirect_url: Optional[str] = None
 
 
-# --- Output DTOs ---
-# --- PaymentInfo specific DTOs (Needs to be defined here) ---
+# --- Generic PaymentInfo DTOs (kept in schema for standardization) ---
 @dataclass
-class BasePaymentInfo:  # Marker base class
+class BasePaymentInfo:
     pass
 
 
 @dataclass
 class AtmPaymentInfo(BasePaymentInfo):
-    bank_code: str
     virtual_account: str
     expire_date: str
+    bank_code: Optional[str] = None  # Made optional as not all gateways provide it
 
 
 @dataclass
 class CvsPaymentInfo(BasePaymentInfo):
     payment_no: str
     expire_date: str
+    payment_url: Optional[str] = None
 
 
 @dataclass
 class BarcodePaymentInfo(BasePaymentInfo):
-    barcode1: str
-    barcode2: str
-    barcode3: str
     expire_date: str
+    barcode1: Optional[str] = None  # Made optional as structure varies
+    barcode2: Optional[str] = None
+    barcode3: Optional[str] = None
+    full_barcode: Optional[str] = None  # Add if some return a single string
 
 
 @dataclass
-class UrlPaymentInfo(BasePaymentInfo):  # <-- 確保這個定義存在
-    """Holds a URL for payment initiation or completion (non-redirect POST)."""
-
+class UrlPaymentInfo(BasePaymentInfo):
     url: str
 
 
@@ -96,21 +80,27 @@ class UrlPaymentInfo(BasePaymentInfo):  # <-- 確保這個定義存在
 class PaymentOutput:
     success: bool
     status: PaymentStatus
-    transaction_id: Optional[str] = None
+    # transaction_id remains ECPay's TradeNo, TapPay's rec_trade_id etc.
     gateway_trade_no: Optional[str] = None
+    order_id: Optional[str] = None  # The merchant's order ID
     message: str = ""
     error_code: Optional[str] = None
     raw_response: Optional[Dict[str, Any]] = None
     redirect_url: Optional[str] = None
     redirect_method: Optional[RedirectMethod] = None
     redirect_form_data: Optional[Dict[str, str]] = None
-    # Use Union to allow different specific info types
+    # Specific method name returned by gateway (e.g., "Credit_CreditCard", "ATM_BOT")
+    # Usually populated after query/callback, not initial redirect.
+    payment_method_name: Optional[str] = None
+    # Generic payment info structures
     payment_info: Optional[
         Union[
             AtmPaymentInfo,
             CvsPaymentInfo,
             BarcodePaymentInfo,
             UrlPaymentInfo,
-            Dict[str, Any],
+            Dict[
+                str, Any
+            ],  # Keep Dict as fallback for gateway-specific structured info
         ]
-    ] = None  # <-- 包含 UrlPaymentInfo
+    ] = None  # Removed BnplApplicationInfo

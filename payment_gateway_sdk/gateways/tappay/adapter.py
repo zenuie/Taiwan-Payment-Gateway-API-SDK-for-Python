@@ -17,7 +17,7 @@ from ...schema.dto.payment import (
     CardholderInfo,  # 如果 Tappay DTO 繼承它
     UrlPaymentInfo,  # <--- 導入 UrlPaymentInfo
 )
-from ...schema.dto.transaction import RefundInput, RefundOutput, QueryInput, QueryOutput
+from ...schema.dto.transaction import QueryInput, QueryOutput
 
 logger = logging.getLogger(__name__)
 
@@ -191,7 +191,7 @@ class TappayAdapter(PaymentAdapter, TransactionAdapter):
 
     # --- Transaction Methods (refund, query_transaction) ---
     # (Implementations unchanged from previous version)
-    def refund(self, input: RefundInput) -> RefundOutput:  # ... (as before) ...
+    def refund(self, input):  # ... (as before) ...
         tappay_data = {
             "rec_trade_id": input.gateway_trade_no,
             **{
@@ -205,13 +205,8 @@ class TappayAdapter(PaymentAdapter, TransactionAdapter):
             tappay_data["amount"] = input.amount
         try:  # ... (call dao, handle response/errors as before) ...
             response_data = self.dao.send_refund_request(tappay_data)
-            return RefundOutput(
-                success=True,
-                status=PaymentStatus.SUCCESS,
-                refund_id=response_data.get("refund_id"),
-                message=response_data.get("msg"),
-                raw_response=response_data,
-            )
+            return response_data
+
         except Exception as e:  # ... (handle errors) ...
             pass
 
